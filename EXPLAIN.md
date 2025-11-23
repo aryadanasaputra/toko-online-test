@@ -1,94 +1,116 @@
-# Penjelasan Proyek Toko Online
+# Penjelasan Terperinci Proyek Toko Online Laravel
 
-## Gambaran Umum
-Proyek ini adalah aplikasi toko online yang dibangun menggunakan framework Laravel. Aplikasi ini memungkinkan pengguna untuk mendaftar, login, melihat produk, melakukan pemesanan, mengunggah bukti pembayaran, dan proses verifikasi oleh customer service (CS). Data pengguna dan produk disimpan dalam schema "master", sedangkan data transaksi (pesanan, item pesanan, pembayaran) disimpan dalam schema "transactions" menggunakan PostgreSQL.
+## 1. Gambaran Umum Proyek
+Proyek ini adalah sebuah aplikasi toko online yang dibangun menggunakan framework Laravel, bertujuan untuk memberikan kemudahan bagi pengguna dalam melakukan pembelian produk secara daring. Sistem ini mendukung berbagai peran pengguna seperti customer, admin, serta customer service (CS) dengan berbagai fitur yang terintegrasi mulai dari registrasi, pemesanan, pembayaran, hingga verifikasi pembayaran.
 
-## Arsitektur Database
-Aplikasi menggunakan PostgreSQL dengan dua schema utama:
-- **Master Schema**: Menyimpan data pengguna (users), kategori produk (categories), dan produk (products).
-- **Transactions Schema**: Menyimpan data pesanan (orders), item pesanan (order_items), dan pembayaran (payments).
+## 2. Arsitektur Database
+Aplikasi menggunakan PostgreSQL dengan pengaturan schema ganda untuk mengoptimalkan pengelolaan data:
 
-Konfigurasi koneksi database didefinisikan dalam `config/database.php` dengan koneksi 'master' dan 'transactions' yang masing-masing menggunakan search_path yang sesuai.
+### 2.1 Master Schema
+Schema ini bertujuan untuk menyimpan data statis dan utama seperti:
+- **Users**: Data pengguna, termasuk role (customer, admin, cs1, cs2).
+- **Categories**: Kategori produk.
+- **Products**: Data produk yang dijual, terkait dengan kategori.
 
-## Model dan Relasi
-### Model Utama
-- **User**: Mewakili pengguna dengan peran (role) seperti customer, admin, cs1, cs2. Tersimpan di schema master.
-- **Category**: Kategori produk. Tersimpan di schema master.
-- **Product**: Produk yang dijual, terkait dengan kategori. Tersimpan di schema master.
-- **Order**: Pesanan yang dibuat oleh pengguna. Tersimpan di schema transactions.
-- **OrderItem**: Item dalam pesanan, terkait dengan produk. Tersimpan di schema transactions.
-- **Payment**: Bukti pembayaran untuk pesanan, dengan status verifikasi. Tersimpan di schema transactions.
+### 2.2 Transactions Schema
+Schema ini mengelola data transaksi yang bersifat dinamis, antara lain:
+- **Orders**: Data pesanan yang dibuat oleh customer.
+- **OrderItems**: Item produk yang ada dalam setiap pesanan.
+- **Payments**: Bukti pembayaran yang diupload oleh customer serta status verifikasinya.
 
-### Relasi Antar Model
-- User memiliki banyak Order (one-to-many).
-- Category memiliki banyak Product (one-to-many).
-- Order memiliki banyak OrderItem (one-to-many) dan satu Payment (one-to-one).
-- OrderItem terkait dengan satu Product.
-- Payment terkait dengan satu Order dan satu User (verifier).
+Koneksi ke database dikonfigurasi dalam `config/database.php` dengan dua koneksi berbeda yang mengatur `search_path` ke schema yang sesuai.
 
-## Alur Kerja Aplikasi
+## 3. Model dan Relasi Antar Model
+Berikut adalah model utama beserta relasinya:
 
-### 1. Registrasi dan Login
-- Pengguna baru dapat mendaftar melalui halaman register (`/register`).
-- Setelah verifikasi email, pengguna dapat login melalui halaman login (`/login`).
-- Sistem menggunakan Laravel Sanctum untuk autentikasi API.
+- **User**
+  - Role: customer, admin, cs1, cs2.
+  - Relasi: Memiliki banyak Order.
+- **Category**
+  - Relasi: Memiliki banyak Product.
+- **Product**
+  - Relasi: Berhubungan dengan Category.
+- **Order**
+  - Relasi: Memiliki banyak OrderItem dan satu Payment.
+- **OrderItem**
+  - Relasi: Berhubungan dengan satu Product.
+- **Payment**
+  - Relasi: Berhubungan dengan satu Order dan satu User sebagai verifier.
 
-### 2. Manajemen Produk (Admin)
-- Admin dapat mengakses panel admin untuk mengelola produk.
-- Halaman: `/admin/products`
-- Fungsi: Tambah, edit, hapus produk, serta import produk dari file Excel.
-- Produk terkait dengan kategori dan memiliki atribut seperti nama, deskripsi, harga, stok, dll.
+## 4. Alur Kerja Aplikasi
+Berikut alur utama sistem:
 
-### 3. Browsing Produk (Customer)
-- Pengguna yang login sebagai customer dapat melihat daftar produk di halaman utama atau `/products`.
-- Produk ditampilkan dengan filter berdasarkan kategori.
-- Customer dapat melihat detail produk di `/products/{id}`.
+### 4.1 Registrasi dan Login
+- Pengguna baru dapat mendaftar melalui halaman `/register`.
+- Pengguna harus melakukan verifikasi email untuk mengaktifkan akun.
+- Autentikasi menggunakan Laravel Sanctum untuk API.
 
-### 4. Proses Pemesanan
-- Customer memilih produk dan menambahkannya ke keranjang (jika ada fitur keranjang).
-- Pada halaman checkout (`/checkout`), customer mengisi alamat pengiriman dan mengkonfirmasi pesanan.
-- Sistem membuat Order baru dengan status 'pending' di schema transactions.
-- OrderItem dibuat untuk setiap produk dalam pesanan.
+### 4.2 Manajemen Produk (Admin)
+- Admin dapat mengelola data produk lewat panel admin di `/admin/products`.
+- Fungsi meliputi tambah, edit, hapus produk dan import produk dari file Excel.
+- Produk memiliki atribut seperti nama, kategori, deskripsi, harga, stok.
 
-### 5. Pembayaran
-- Setelah pesanan dibuat, customer diarahkan untuk mengunggah bukti pembayaran.
-- Bukti pembayaran disimpan sebagai file, dan status pembayaran diatur sebagai 'uploaded'.
-- Payment terkait dengan Order dan disimpan di schema transactions.
+### 4.3 Browsing Produk (Customer)
+- Customer dapat melihat daftar produk di halaman utama atau `/products`.
+- Produk dapat difilter berdasarkan kategori.
+- Detail produk dapat dilihat pada `/products/{id}`.
 
-### 6. Verifikasi Pembayaran (CS)
-- Customer Service (cs1 atau cs2) dapat melihat daftar pembayaran yang perlu diverifikasi.
-- Halaman: `/cs1` atau `/cs2` (tergantung role).
-- CS dapat melihat detail pembayaran, mengubah status menjadi 'verified' atau 'rejected', dan menambahkan catatan.
-- Jika diverifikasi, status Order diubah menjadi 'confirmed' atau status berikutnya dalam alur.
+### 4.4 Proses Pemesanan
+- Customer memilih produk dan melakukan checkout di halaman `/checkout`.
+- Mengisi informasi pengiriman dan konfirmasi pesanan.
+- Sistem membuat Order dengan status 'pending' di schema transaksi.
+- Setiap produk dalam pesanan disimpan sebagai OrderItem.
 
-### 7. Pengelolaan Pesanan
-- Setelah pembayaran diverifikasi, pesanan diproses: packing, shipped, dll.
-- Customer dapat melihat status pesanan di `/orders`.
-- Admin/CS dapat mengupdate status pesanan.
+### 4.5 Proses Pembayaran
+- Setelah pesan, customer mengupload bukti pembayaran.
+- Status pembayaran di-set sebagai 'uploaded'.
+- Payment terkait dengan Order dan disimpan dalam schema transaksi.
 
-## Struktur File Utama
-- **Routes**: Didefinisikan di `routes/web.php` dan `routes/auth.php`.
-- **Controllers**: 
-  - `ProductController` (admin): Mengelola CRUD produk.
-  - `OrderController`: Mengelola pesanan.
-  - `PaymentController`: Mengelola pembayaran.
-  - `ProfileController`: Mengelola profil pengguna.
-  - `Auth Controllers`: Mengelola autentikasi.
-- **Views**: Blade templates di `resources/views/`, termasuk layout, form, dan halaman admin/CS.
-- **Migrations**: File migrasi di `database/migrations/` untuk membuat tabel di schema yang sesuai.
-- **Seeders**: `DatabaseSeeder` untuk mengisi data awal pengguna, kategori, produk, dan contoh transaksi.
+### 4.6 Verifikasi Pembayaran (Customer Service)
+- CS, dengan role `cs1` atau `cs2`, memverifikasi bukti pembayaran.
+- Melalui halaman `/cs1` atau `/cs2`, CS dapat melihat detail pembayaran, mengubah status pembayaran menjadi 'verified' atau 'rejected', serta menambahkan catatan.
+- Jika diverifikasi, status Order berubah menjadi 'confirmed' dan masuk ke tahap berikutnya.
 
-## Setup dan Instalasi
-1. Pastikan PostgreSQL terinstall dan database dibuat.
-2. Konfigurasi `.env` dengan kredensial PostgreSQL.
-3. Jalankan `php artisan migrate` untuk membuat schema dan tabel.
-4. Jalankan `php artisan db:seed` untuk mengisi data awal.
-5. Jalankan `php artisan serve` untuk menjalankan aplikasi.
+### 4.7 Pengelolaan Pesanan Lanjutan
+- Status pesanan dapat di-update (packing, shipped, completed).
+- Customer dapat memantau status pesanan melalui halaman `/orders`.
+- Admin dan CS juga memiliki akses untuk mengubah status pesanan.
 
-## Fitur Tambahan
-- Import produk dari Excel menggunakan `ProductsImport`.
-- Middleware untuk kontrol akses berdasarkan role (`RoleMiddleware`, `DenyRoleMiddleware`).
-- Email verification untuk pengguna baru.
-- File upload untuk bukti pembayaran.
+## 5. Struktur File Utama
+- **routes/**
+  - `web.php` dan `auth.php` berisi definisi route aplikasi.
+- **app/Http/Controllers/**
+  - Berisi controller yang mengatur logika aplikasi untuk produk, order, pembayaran, profil, serta autentikasi.
+- **resources/views/**
+  - Template Blade yang digunakan untuk membangun UI, termasuk layout dan halaman fungsi spesifik.
+- **database/migrations/**
+  - File migrasi yang membuat tabel dan schema PostgreSQL.
+- **database/seeders/**
+  - Penambah data sample awal untuk pengguna, produk, dan kategori.
 
-Aplikasi ini dirancang untuk skalabilitas dengan pemisahan schema, memungkinkan pengelolaan data yang lebih terorganisir dan performa yang optimal.
+## 6. Setup dan Instalasi
+Langkah untuk menjalankan proyek ini secara lokal:
+1. Pasang PostgreSQL dan buat database kosong.
+2. Sesuaikan konfigurasi koneksi database di `.env`.
+3. Jalankan migrasi:
+   ```
+   php artisan migrate
+   ```
+4. Jalankan seeder untuk data awal:
+   ```
+   php artisan db:seed
+   ```
+5. Jalankan server:
+   ```
+   php artisan serve
+   ```
+
+## 7. Fitur Tambahan
+- Import produk melalui file Excel untuk kemudahan upload massal.
+- Middleware untuk mengontrol akses berdasarkan peran user.
+- Sistem verifikasi email untuk keamanan akun.
+- Upload bukti pembayaran dengan validasi status.
+
+---
+
+Dokumentasi ini bertujuan agar pengembang dan pengguna memahami struktur dan alur sistem dengan jelas untuk kemudahan penggunaan dan pengembangan berkelanjutan.
