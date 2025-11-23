@@ -111,6 +111,21 @@ Langkah untuk menjalankan proyek ini secara lokal:
 - Sistem verifikasi email untuk keamanan akun.
 - Upload bukti pembayaran dengan validasi status.
 
+
+---
+
+## 8. Otomatisasi Pemesanan 24 Jam
+
+Aplikasi ini dilengkapi dengan mekanisme otomatisasi untuk mengelola pesanan yang belum dibayar oleh customer dalam waktu 24 jam. Mekanisme ini menggunakan sebuah perintah console Laravel yang berjalan secara terjadwal (scheduler), dengan detail sebagai berikut:
+
+- Perintah console bernama `orders:cancel-unpaid` dijalankan setiap saat seperti pada scheduler harian.
+- Perintah ini mencari semua pesanan dengan status `awaiting_payment` yang dibuat lebih dari 24 jam yang lalu.
+- Pesanan yang memenuhi kondisi tersebut akan otomatis diubah statusnya menjadi `cancelled`.
+- Dengan otomatisasi ini, sistem dapat membersihkan pesanan yang tidak dibayar secara otomatis setiap hari tanpa intervensi manual.
+- Hal ini membantu menjaga database tetap bersih dan proses pemesanan berjalan lancar.
+
+Proses otomatisasi ini biasanya diatur melalui scheduler Laravel (`app/Console/Kernel.php`) yang memanggil perintah ini sesuai jadwal waktu yang diinginkan.
+
 ---
 
 Dokumentasi ini bertujuan agar pengembang dan pengguna memahami struktur dan alur sistem dengan jelas untuk kemudahan penggunaan dan pengembangan berkelanjutan.

@@ -8,7 +8,6 @@ use App\Models\OrderItem;
 use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller {
-    // use session cart for simplicity
     public function addToCart(Request $r, $id){
         $product = Product::findOrFail($id);
         $cart = session()->get('cart', []);

@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class CSController extends Controller {
-    // List uploaded payments for CS layer1
+    // CS layer1
     public function listPaymentsForVerification(){
         $payments = Payment::where('status','uploaded')->with('order.user')->get();
         $hasPendingPayments = $payments->count() > 0;
@@ -19,7 +19,6 @@ class CSController extends Controller {
         DB::transaction(function() use($payment){
             $payment->update(['status'=>'verified','verified_by'=>auth()->id()]);
             $order = $payment->order;
-            // reduce stock here
             foreach($order->items as $item){
                 $product = $item->product;
                 $product->decrement('stock', $item->quantity);
@@ -46,7 +45,6 @@ class CSController extends Controller {
     public function markShipped(Request $r, $id){
         $order = Order::findOrFail($id);
         $order->update(['status'=>'shipped']);
-        // optional: save tracking no
         return back()->with('success','Order dimark shipped.');
     }
 }
