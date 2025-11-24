@@ -21,7 +21,7 @@
    ```
 4. Jalankan link storage untuk data gambar:
    ```
-   php artisan link:storage
+   php artisan storage:link
    ```
 5. Jalankan seeder untuk data awal:
    ```
