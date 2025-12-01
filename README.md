@@ -1,4 +1,4 @@
-## Fitur Utama
+# Fitur Utama
 - Registrasi dan login pengguna dengan berbagai peran (customer, admin, cs1, cs2)
 - Manajemen produk oleh admin (tambah, edit, hapus, import dari Excel)
 - Proses pemesanan oleh customer dan konfirmasi melalui halaman checkout
